@@ -20,6 +20,7 @@ const authRoute = require('./routes/auth');
 const transactionRoute = require('./routes/transactions');
 const networkRoute = require('./routes/network');
 const balanceRoute = require('./routes/balances');
+const notifRoute = require('./routes/notifications');
 
 
 app.get('/',(req,res) => {
@@ -35,6 +36,7 @@ app.use('/api/auth',authRoute);
 app.use('/api/transactions',transactionRoute);
 app.use('/api/network',networkRoute);
 app.use('/api/balances',balanceRoute);
+app.use('/api/notif',notifRoute);
 
 
 app.use(errorMiddleware.errorHandler);

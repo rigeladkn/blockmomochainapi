@@ -5,6 +5,7 @@ const User = require("../models/User");
 const Balance = require("../models/Balance");
 const Helpers = require('../helpers/Helpers');
 const Network = require("../models/Network");
+const Queue = require("../models/Queue");
 const momocontroller = require('./momo.controller');
 
 
@@ -44,7 +45,7 @@ const sendTransaction = asyncHandler(async function(req,res){
                                 amount : amount,
                                 transactionId : transactionId,
                                 status : networkStatus == 'DOWN' ? 'DOWNTIME' : 'DEFAULT',
-                                resolvedStatus : networkStatus == 'DOWN' ? 'PENDING' : 'RESOLVED',
+                                resolvedStatus : networkStatus == 'DOWN' ? 'PENDING' : 'SUCCESS',
                                 type : type
                             });
                             transaction.save();
@@ -53,6 +54,12 @@ const sendTransaction = asyncHandler(async function(req,res){
                             await Balance.findOneAndUpdate({userId : type ==  'TRANSFERT' ? req.user._id : receiverId }, {$inc:{amount : -amount}});
                             await Balance.findOneAndUpdate({userId : type ==  'TRANSFERT' ? receiverId : req.user._id }, {$inc:{amount : +amount}});
 
+                            //ADD TRANSACTION IN QUEUE IF NETWORK DOWN
+                            if(networkStatus == 'DOWN'){
+                                const queue = Queue({transactionId : transaction._id});
+                                queue.save();
+                            }
+                            //
                             res.status(201).send({
                                 success : true,
                                 message : 'Money sent successfully',
@@ -89,7 +96,7 @@ const sendTransaction = asyncHandler(async function(req,res){
 // route GET /api/transactions
 // @access PRIVATE
 const getUserTransactions = asyncHandler(async function(req,res){
-    const transactions = await Transaction.find({ $or : [{sender : req.user._id },{receiver : req.user._id}]}).sort({"updatedAt" : -1});
+    const transactions = await Transaction.find({ $or : [{sender : req.user._id },{receiver : req.user._id}]}).sort({"updatedAt" : -1}).populate('sender',['firstname','lastname','phone']).populate('receiver',['firstname','lastname','phone']);
     res.status(200).send({
         success : true,
         message : 'Success getting list of transactions',

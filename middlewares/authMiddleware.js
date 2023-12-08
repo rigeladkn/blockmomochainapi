@@ -7,6 +7,7 @@ const checkAuthenticated =  asyncHandler(
 
     try {
         let token = req.header('authorization').split(' ')[1] || req.body.token ;
+        // console.log(token);
         if(token){
             try {
                 const decoded = await jwt.verify(token,process.env.JWT_SECRET);
@@ -26,8 +27,9 @@ const checkAuthenticated =  asyncHandler(
             throw new Error('Unauthorized, no token');
         }
     } catch (error) {
+        console.log('BAD ERROR');
         res.status(401);
-        throw new Error('Unauthorized, no token');
+        throw new Error(error);
     } 
     }
 );

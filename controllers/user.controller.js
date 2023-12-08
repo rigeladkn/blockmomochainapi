@@ -114,10 +114,14 @@ const login = asyncHandler(async (req,res) => {
     }
     //----------
     user.save();
-    res.status(200).json({
+    res.status(201).json({
         success : true,
         message : 'User logged successfully',
-        token : token
+        token : token,
+        user : {
+            phone : user.phone,
+            id : user._id
+        }
     });
   }
   else{
